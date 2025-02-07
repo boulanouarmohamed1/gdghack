@@ -1,0 +1,55 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const User = require('./models/User'); // Import the User model from a separate file (to keep it clean)
+
+const app = express();
+
+// Use JSON middleware to handle JSON request bodies
+app.use(express.json());
+
+// MongoDB connection URI
+const dbURI = "mongodb://localhost:27017/myDatabase"; // Replace with your MongoDB URI
+
+// Connect to MongoDB
+mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((error) => {
+    console.error("Error connecting to MongoDB:", error);
+  });
+
+// Home route (for testing the server)
+app.get('/', (req, res) => {
+  res.send('Welcome to the Express & MongoDB app!');
+});
+
+// Route to create a new user (POST request)
+app.post('/users', (req, res) => {
+  const newUser = new User(req.body); // Using the request body for user data
+  
+  newUser.save()
+    .then(() => {
+      res.status(201).json({ message: 'User saved successfully!' });
+    })
+    .catch((error) => {
+      res.status(400).json({ error: 'Error saving user', details: error });
+    });
+});
+
+// Route to get all users (GET request)
+app.get('/users', (req, res) => {
+  User.find()
+    .then((users) => {
+      res.status(200).json(users);
+    })
+    .catch((error) => {
+      res.status(400).json({ error: 'Error fetching users', details: error });
+    });
+});
+
+// Start the server
+const PORT = 3000; // You can change the port if you prefer
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
